@@ -6,7 +6,20 @@ namespace Northrook\Cache;
 
 use Psr\Log as Psr;
 use Symfony\Contracts\Cache as Symfony;
-use const Duration\EPHEMERAL;
+
+const
+EPHEMERAL = -1,
+AUTO      = null,
+FOREVER   = 0,
+MINUTE    = 60,
+HOUR      = 3600,
+HOUR_4    = 14400,
+HOUR_8    = 28800,
+HOUR_12   = 43200,
+DAY       = 86400,
+WEEK      = 604800,
+MONTH     = 2592000,
+YEAR      = 31536000;
 
 /**
  * Cache the result of a callable, improving  performance by avoiding redundant computations.
@@ -30,7 +43,7 @@ function memoize(
 
 final class MemoizationCache
 {
-    private static ?MemoizationCache $instance = null;
+    private static ?MemoizationCache $instance;
 
     private array $inMemoryCache;
 
@@ -86,21 +99,14 @@ final class MemoizationCache
         }
     }
 
-    private function hash( \Closure $callback ) : ?string {
-        try {
-            $reflection = new \ReflectionFunction( $callback );
-        }
-        catch ( \ReflectionException $exception ) {
-            $this->logger?->error(
-                'Memo cache failed to perform reflection on passed Closure, the result has not been cached.',
-                [ 'exception' => $exception, 'closure' => $callback ],
-            );
-            return null;
-        }
 
-        return \hash( 'xxh3', \serialize( $reflection->getClosureUsedVariables() ) );
-    }
-
+    /**
+     * Retrieve the {@see MemoizationCache::$instance}, instantiating it if required.
+     *
+     * - To use a {@see Symfony\CacheInterface}, instantiate before making your first {@see cache()} call.
+     *
+     * @return MemoizationCache
+     */
     public static function instance() : MemoizationCache {
         return MemoizationCache::$instance ?? new MemoizationCache();
     }
@@ -124,4 +130,27 @@ final class MemoizationCache
         $this->cacheAdapter?->clear();
         return $this;
     }
+
+    /**
+     * Generate a hash value based on the `use` variables of the {@see \Closure}.
+     *
+     * @param \Closure  $callback
+     *
+     * @return ?string
+     */
+    private function hash( \Closure $callback ) : ?string {
+        try {
+            $reflection = new \ReflectionFunction( $callback );
+        }
+        catch ( \ReflectionException $exception ) {
+            $this->logger?->error(
+                'Memo cache failed to perform reflection on passed Closure, the result has not been cached.',
+                [ 'exception' => $exception, 'closure' => $callback ],
+            );
+            return null;
+        }
+
+        return \hash( 'xxh3', \serialize( $reflection->getClosureUsedVariables() ) );
+    }
+
 }
