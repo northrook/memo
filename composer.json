@@ -18,8 +18,7 @@
   "prefer-stable": true,
   "require": {
     "php": ">=8.1",
-    "ext-zend-opcache": "*",
-    "northrook/functions": "dev-main"
+    "ext-zend-opcache": "*"
   },
   "require-dev": {
     "northrook/dev-env": "dev-main",
