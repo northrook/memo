@@ -1,0 +1,28 @@
+{
+  "name": "northrook/memo",
+  "description": "PHP Memorization, offers persistent disk storage using OPcache, or integrate any symfony/cache adapter.",
+  "type": "library",
+  "license": "MIT",
+  "autoload": {
+    "files": [
+      "MemoizationCache.php"
+    ]
+  },
+  "authors": [
+    {
+      "name": "Martin",
+      "email": "mn@northrook.com"
+    }
+  ],
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "require": {
+    "php": ">=8.1",
+    "ext-zend-opcache": "*",
+    "northrook/functions": "dev-main"
+  },
+  "require-dev": {
+    "northrook/dev-env": "dev-main",
+    "symfony/cache": "@stable"
+  }
+}
