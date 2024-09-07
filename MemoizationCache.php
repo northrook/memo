@@ -6,20 +6,8 @@ namespace Northrook\Cache;
 
 use Psr\Log as Psr;
 use Symfony\Contracts\Cache as Symfony;
+use const Cache\EPHEMERAL;
 
-const
-EPHEMERAL = -1,
-AUTO      = null,
-FOREVER   = 0,
-MINUTE    = 60,
-HOUR      = 3600,
-HOUR_4    = 14400,
-HOUR_8    = 28800,
-HOUR_12   = 43200,
-DAY       = 86400,
-WEEK      = 604800,
-MONTH     = 2592000,
-YEAR      = 31536000;
 
 /**
  * Cache the result of a callable, improving  performance by avoiding redundant computations.
@@ -37,9 +25,11 @@ function memoize(
     \Closure $callback,
     ?string  $key = null,
     ?int     $persistence = EPHEMERAL,
-) : mixed {
+) : mixed
+{
     return MemoizationCache::instance()->cache( $callback, $key, $persistence );
 }
+
 
 final class MemoizationCache
 {
@@ -50,12 +40,13 @@ final class MemoizationCache
     public function __construct(
         private readonly ?Symfony\CacheInterface $cacheAdapter = null,
         private readonly ?Psr\LoggerInterface    $logger = null,
-    ) {
+    )
+    {
         $this::$instance = $this;
     }
 
-    public function cache( \Closure $callback, ?string $key = null, ?int $persistence = EPHEMERAL ) : mixed {
-
+    public function cache( \Closure $callback, ?string $key = null, ?int $persistence = EPHEMERAL ) : mixed
+    {
         $key ??= $this->hash( $callback );
 
         if ( !$key ) {
@@ -80,7 +71,8 @@ final class MemoizationCache
         try {
             return $this->cacheAdapter->get(
                 key      : $key,
-                callback : static function ( Symfony\ItemInterface $memo ) use ( $callback, $persistence ) : mixed {
+                callback : static function( Symfony\ItemInterface $memo ) use ( $callback, $persistence ) : mixed
+                {
                     $memo->expiresAfter( $persistence );
                     return $callback();
                 },
@@ -99,7 +91,6 @@ final class MemoizationCache
         }
     }
 
-
     /**
      * Retrieve the {@see MemoizationCache::$instance}, instantiating it if required.
      *
@@ -107,7 +98,8 @@ final class MemoizationCache
      *
      * @return MemoizationCache
      */
-    public static function instance() : MemoizationCache {
+    public static function instance() : MemoizationCache
+    {
         return MemoizationCache::$instance ?? new MemoizationCache();
     }
 
@@ -116,7 +108,8 @@ final class MemoizationCache
      *
      * @return $this
      */
-    public function clearInMemoryCache() : MemoizationCache {
+    public function clearInMemoryCache() : MemoizationCache
+    {
         $this->inMemoryCache = [];
         return $this;
     }
@@ -126,7 +119,8 @@ final class MemoizationCache
      *
      * @return $this
      */
-    public function clearAdapterCache() : MemoizationCache {
+    public function clearAdapterCache() : MemoizationCache
+    {
         $this->cacheAdapter?->clear();
         return $this;
     }
@@ -138,7 +132,8 @@ final class MemoizationCache
      *
      * @return ?string
      */
-    private function hash( \Closure $callback ) : ?string {
+    private function hash( \Closure $callback ) : ?string
+    {
         try {
             $reflection = new \ReflectionFunction( $callback );
         }
